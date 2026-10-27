@@ -50,6 +50,11 @@ To stop, run the same command with `down` instead of `up -d`. Use `down -v` to a
 - Ubuntu 24.04 with at least 2 CPU cores, 4 GB RAM and 40 GB disk
 - A DNS **A record** for `chat.uowa.edu.iq` that points at the server's public IP address
 - Ports **80** and **443** open to the internet (Caddy needs both to get its certificate)
+- Outbound HTTPS to **`collector.rocket.chat`** and **`cloud.rocket.chat`**. Rocket.Chat makes a workspace read-only (sending a message fails with `restricted-workspace`) until it has delivered a usage report to `collector.rocket.chat`, and again if no report gets through for 10 days. Check it from the server with:
+  ```bash
+  curl -sS -o /dev/null -w '%{http_code}\n' https://collector.rocket.chat/
+  ```
+  Any HTTP status code means the server can reach it; a timeout or a "connection reset" error means the network or ISP is blocking it.
 
 ## 1. Prepare the server
 
@@ -95,6 +100,7 @@ Wait for `SERVER RUNNING`, then press Ctrl+C. Open **https://chat.uowa.edu.iq**.
 ## 4. First-time setup (in the browser)
 
 1. The setup wizard opens. Create the **admin account** and fill in the organization details.
+   The last step registers the workspace with Rocket.Chat Cloud, which sends a confirmation email to the address you enter. This email comes from Rocket.Chat, not from this server's SMTP settings. If the email never arrives, or the page reports `socket hang up`, the server can't reach `cloud.rocket.chat`; see "Skipping the registration step" below.
 2. **Administration → Workspace → Settings**:
    - **Assets**: upload `logo.svg`, `logo_dark.svg` and the favicons from `apps/meteor/public/images/logo/` to replace the defaults saved in the database.
    - **Layout → Login**: turn on **Hide "Powered by"** if you want.
@@ -112,6 +118,19 @@ Once the site is live, each person can install it:
 - **Windows / macOS (Chrome or Edge):** the install icon in the address bar
 
 It opens in its own window as **UOWA Chat** with the UOWA icon.
+
+## Skipping the registration step
+
+Registration is optional. To finish the wizard without it, mark it as completed and restart (add `-f docker-compose.local.yml` after `-f docker-compose.yml` when running locally):
+
+```bash
+docker compose exec -T mongodb mongosh --quiet rocketchat --eval 'db.rocketchat_settings.updateOne({_id: "Show_Setup_Wizard"}, {$set: {value: "completed"}})'
+docker compose restart rocketchat
+```
+
+Then log in with the admin account from step 1. Messaging still needs the usage report to reach `collector.rocket.chat`; registration doesn't change that.
+
+If a dialog says **"Unique ID change detected"** after you change the address (`LOCAL_URL`, `DOMAIN`), choose **Configuration update**.
 
 ## Backups
 
