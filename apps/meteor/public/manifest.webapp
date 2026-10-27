@@ -1,6 +1,6 @@
 {
-    "name": "RocketChat",
-    "description": "The Ultimate Open Source WebChat Platform",
+    "name": "UOWA Chat",
+    "description": "University of Warith Al-Anbiyaa chat",
     "launch_path": "/",
     "icons": {
         "192": "/assets/favicon_192.png",

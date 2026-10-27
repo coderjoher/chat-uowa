@@ -157,7 +157,7 @@ test.describe.serial('homepage', () => {
 			});
 
 			test.afterAll(async ({ api }) => {
-				expect((await api.post('/settings/Site_Name', { value: 'Rocket.Chat' })).status()).toBe(200);
+				expect((await api.post('/settings/Site_Name', { value: 'UOWA Chat' })).status()).toBe(200);
 				expect((await api.post('/settings/Layout_Home_Title', { value: 'Home' })).status()).toBe(200);
 			});
 
