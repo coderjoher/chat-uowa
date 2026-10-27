@@ -1,0 +1,14 @@
+# Runs UOWA Chat on this computer without Caddy or a domain:
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+# Opens at http://localhost:3000. To use it from phones and other computers on the
+# same network, set LOCAL_URL in .env to this computer's address, e.g. http://192.168.1.20:3000
+
+services:
+  rocketchat:
+    environment:
+      ROOT_URL: ${LOCAL_URL:-http://localhost:3000}
+    ports:
+      - '3000:3000'
+
+  caddy:
+    profiles: ['https']
