@@ -19,7 +19,7 @@ services:
 
   # The uploads volume starts out owned by root; Rocket.Chat runs as its own user.
   uploads-permissions:
-    image: registry.rocket.chat/rocketchat/rocket.chat:${RELEASE}
+    image: registry.rocket.chat/rocketchat/rocket.chat:${RELEASE:-8.9.0}
     user: root
     entrypoint: ['chown', '-R', 'rocketchat:rocketchat', '/app/uploads']
     restart: 'no'
@@ -27,7 +27,7 @@ services:
       - rocketchat-uploads:/app/uploads
 
   rocketchat:
-    image: registry.rocket.chat/rocketchat/rocket.chat:${RELEASE}
+    image: registry.rocket.chat/rocketchat/rocket.chat:${RELEASE:-8.9.0}
     restart: unless-stopped
     depends_on:
       mongodb:
@@ -35,7 +35,7 @@ services:
       uploads-permissions:
         condition: service_completed_successfully
     environment:
-      ROOT_URL: https://${DOMAIN}
+      ROOT_URL: https://${DOMAIN:-localhost}
       PORT: 3000
       MONGO_URL: mongodb://mongodb:27017/rocketchat?replicaSet=rs0
       DEPLOY_METHOD: docker
@@ -64,8 +64,8 @@ services:
       - '443:443'
       - '443:443/udp'
     environment:
-      DOMAIN: ${DOMAIN}
-      ACME_EMAIL: ${ACME_EMAIL}
+      DOMAIN: ${DOMAIN:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

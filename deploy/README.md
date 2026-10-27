@@ -8,6 +8,43 @@ UOWA Chat runs the official Rocket.Chat release in Docker, with the UOWA name an
 | `rocketchat` | Rocket.Chat, the version set by `RELEASE` in `.env` |
 | `caddy` | HTTPS on ports 80 and 443 for `DOMAIN` |
 
+## Try it on your computer first
+
+You need Docker: [Docker Desktop](https://www.docker.com/products/docker-desktop/) on Windows or macOS (on Windows, accept the WSL 2 option), or `curl -fsSL https://get.docker.com | sh` on Linux. Then, in this folder:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.local.yml logs -f rocketchat
+```
+
+When you see `SERVER RUNNING`, press Ctrl+C and open **http://localhost:3000**. No domain, certificate or `.env` is needed.
+
+### From phones and other computers on the same network
+
+1. Find this computer's IP address on the local network:
+   - **Windows:** run `ipconfig` and read **IPv4 Address** (for example `192.168.1.20`)
+   - **macOS:** `ipconfig getifaddr en0`
+   - **Linux:** `hostname -I`
+2. Before the **first** start, create a `.env` file in this folder containing:
+   ```
+   LOCAL_URL=http://192.168.1.20:3000
+   ```
+   If you already started it with `localhost`, also change **Administration → Settings → General → Site URL** to the same address. Rocket.Chat saves the address on the first start only.
+3. Start it with the command above, and open **http://192.168.1.20:3000** on the other device.
+4. If the other device can't connect, the firewall on this computer is blocking port 3000:
+   - **Windows:** when Windows asks whether to allow Docker Desktop, choose **Allow** (private networks). If it doesn't ask, open PowerShell **as administrator** and run:
+     ```powershell
+     New-NetFirewallRule -DisplayName "UOWA Chat (local test)" -Direction Inbound -Protocol TCP -LocalPort 3000 -Action Allow -Profile Private
+     ```
+     Then make sure your Wi-Fi or Ethernet connection is set to **Private network** in Windows settings. The rule doesn't apply to *Public* networks.
+   - **macOS:** if asked, allow incoming connections for Docker. Otherwise check *System Settings → Network → Firewall*.
+   - **Linux (ufw):** `sudo ufw allow 3000/tcp`
+   - Guest Wi-Fi networks often block devices from reaching each other. Use the normal staff network.
+
+Over plain `http://` to an IP address, browsers treat the site as not secure. On other devices, chat, channels and file sharing work, but **voice and video calls, browser notifications and "Install app" are blocked**. Those work on `localhost` on this computer, and on the real server once it has HTTPS.
+
+To stop, run the same command with `down` instead of `up -d`. Use `down -v` to also delete the test data.
+
 ## Requirements
 
 - Ubuntu 24.04 with at least 2 CPU cores, 4 GB RAM and 40 GB disk
